@@ -22,7 +22,14 @@
                        You currently logged in.
                       </div>
                   </div>
-      
+     
+
+                  {% if referer %}
+                         <script>
+                         window.location = "{{ referer }}auth?sso_auth_session_id={{ sso_auth_session_id }}&referer={{ referer }}";
+                         </script>
+                  {% endif %}
+ 
       
           </div>
           <div class="col-md-3 col-sm-1">
@@ -148,7 +155,7 @@ margin-bottom:20px;
               </div>
       </div>
      </div>
-
+ 
      {% if referer %}
             <script>
             window.location = "{{ referer }}auth?sso_auth_session_id={{ sso_auth_session_id }}&referer={{ referer }}";
