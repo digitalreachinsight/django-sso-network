@@ -16,6 +16,7 @@ from ssoapp import models
 from ssoapp import forms as app_forms
 from ssoapp import context_processors
 from ssoapp import utils
+from django.conf import settings
 import string
 import random
 import datetime
@@ -68,6 +69,8 @@ class HomePage(CreateView):
     def get_context_data(self, **kwargs):
         context = super(HomePage, self).get_context_data(**kwargs)
         context['query_string'] = ''
+        context['sso_auth_session_id'] = self.request.COOKIES.get(settings.SESSION_COOKIE_NAME,'')
+        context['referer'] = self.request.GET.get('referer',None)
         return context
 
     def get_initial(self):
@@ -258,7 +261,7 @@ class VerifyEmailPIN(CreateView):
 
 def CheckAuth(request):
      text = request.COOKIES.get('session','')
-     cookie_session = request.COOKIES.get('sso_auth_session_id','')
+     cookie_session = request.COOKIES.get(settings.SESSION_COOKIE_NAME,'')
      get_session = request.GET.get('sso_auth_session_id',None)
      referer = request.GET.get('referer','')
 
@@ -270,7 +273,7 @@ def CheckAuth(request):
          response = HttpResponse('Authenticated', content_type='text/plain', status=200)
          response['X-TestUser'] = 'test@test.com'
          if get_session:
-               response.set_cookie('sso_auth_session_id', get_session, max_age=sess.expiry,expires=sess.expiry)
+               response.set_cookie(settings.SESSION_COOKIE_NAME, get_session, max_age=sess.expiry,expires=sess.expiry)
                response = HttpResponseRedirect(referer)
      else:
          response = HttpResponse('Unable to find valid session', content_type='text/plain', status=403)
@@ -285,7 +288,7 @@ def Auth(request):
      print (request.META)
 
      text = request.COOKIES.get('session','')
-     cookie_session = request.COOKIES.get('sso_auth_session_id','')
+     cookie_session = request.COOKIES.get(settings.SESSION_COOKIE_NAME,'')
      get_session = request.GET.get('sso_auth_session_id',None)
      referer = request.GET.get('referer','')
 
@@ -295,7 +298,7 @@ def Auth(request):
            session_id = get_session
            cs = loader.render_to_string( 'cookie_session.html', {'referer': referer})
            response = HttpResponse(cs, content_type='text/html', status=200)
-           response.set_cookie('sso_auth_session_id', get_session ) 
+           response.set_cookie(settings.SESSION_COOKIE_NAME, get_session ) 
 
            #response = HttpResponseRedirect(referer)
            return response
