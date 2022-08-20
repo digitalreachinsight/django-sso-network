@@ -1,0 +1,219 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" >
+
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+         
+        {% block header_js %}
+	    <script src="/static/common_addons/node_modules/jquery/dist/jquery.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="/static/common_addons/node_modules/moment/min/moment.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="/static/common_addons/node_modules/@popperjs/core/dist/umd/popper.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="/static/common_addons/node_modules/bootstrap/dist/js/bootstrap.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	{% endblock %}
+
+	{% block header_css %}
+	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/daterangepicker/daterangepicker.css?ver={{ GIT_COMMIT_HASH }}" />
+	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap/dist/css/bootstrap.css?ver={{ GIT_COMMIT_HASH }}" />
+	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap-icons/font/bootstrap-icons.css?ver={{ GIT_COMMIT_HASH }}"/>
+	{% endblock %}
+         
+        {% block extra_js %}
+        {% endblock %}
+
+        {% block extra_css %}
+        {% endblock %}
+
+	{% block extra_hidden_inputs %}
+        {% endblock %}
+
+        <title>
+            {% block title %}
+                 Django SSO Login 
+            {% endblock %}
+        </title>
+    </head>
+    <body>
+
+ 
+        {% block header_top_menu %}
+	      {% if request.user.is_authenticated %}
+                  <div class="top_header_bar">
+                       <div style='padding: 10px;'>
+                          <div class="row">
+                              <div class="col-lg-12 " >
+                                    <div class='container'>
+                                    <ul>
+                                            {% block  top_menu %}
+                                            <li>
+                                                     <button type="button" class="btn btn-sm btn-secondary">
+                                                              Notification 1 <span class="badge bg-danger">14</span>
+                                                     </button>
+                                    
+                                            </li>
+                                    
+                                            <li>
+                                                     <button type="button" class="btn btn-sm btn-secondary">
+                                                              Notification 2 <span class="badge bg-danger">4</span>
+                                                     </button>
+                                    
+                                            </li>
+                                            <li>
+                                                     <button type="button" class="btn btn-sm btn-secondary">
+                                                              Notification 3 <span class="badge bg-danger">8</span>
+                                                     </button>
+                                    
+                                            </li>
+                                            {% endblock %}
+                                    
+                                    </ul>
+                                    </div>
+                              </div>
+                         </div>
+                       </div>
+                   </div>
+              {% endif %}
+        {% endblock %}
+
+        {% block main_header %}
+
+                  <div class='container'>
+                  <div class="" style='background-color: FFF;  z-index: 2;'>
+                          <div style='padding: 20px;'>
+                              <div class="row">
+                                  <div class="col-lg-12">
+                                          <h1 id="site-title" class="site-logo">
+                                             <a href="{% url 'home'%}">
+                                                <img src="/static/img/logo.png" alt="{{ title_header }}" class="img-responsive"/>
+                                             </a>
+                                          </h1>
+                                  </div>
+                          </div>
+                      </div>
+                  </div>
+                  </div>
+
+
+        {% endblock %}
+
+
+        {% block main_menu %}
+                    <div class='gov_b5_nav'>
+                        <div class='container'>
+                            <div class='row'>
+                               <div class='col-sm-12'>
+                                         <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                                           <div class="container-fluid">
+                                             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+                                               <span class="navbar-toggler-icon"></span>
+                                             </button>
+                                             <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+                                               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                                 {% block menu_items_left %}
+						    {% include 'base_template/includes/primary_menu.html' %}
+                                                 {% endblock %}
+                                                </ul>
+                                                <ul class="navbar-nav navbar-right" >
+                                                  {% block menu_items_right %}
+                                                  {% if request.user.is_authenticated %}
+                                                 <li class="nav-item">
+                                                     <a class="nav-link" href="#">
+                                                     Welcome
+                                                     <strong>
+                                                         {% if request.user.first_name %}
+                                                             {{ request.user.first_name }}
+                                                         {% elif request.user.last_name %}
+                                                             {{ request.user.last_name }}
+                                                         {% else %}
+                                                             {{ request.user.email }}
+                                                         {% endif %}
+                                                     </strong>
+                                                     </a>
+                                                 </li>
+                    
+                                                 <li class="nav-item dropdown">
+                                                   <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                     Options
+                                                   </a>
+                                                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown">
+                                                     <span class='caret-above-menu hidden-sm' style=''><i class="bi bi-caret-up-fill fas ml-2"></i></span>
+						          {% block menu_dropdown %}
+							      {% block menu_extra_dropdown_top %}
+							      {% endblock %}
+                                                              <li><a class="dropdown-item" href="{% url 'logout' %}?next=/">Logout</a></li>
+							  {% endblock %}
+                                                   </ul>
+                                                 </li>
+                                               {% endif %}
+					       {% endblock %}
+					       {% block menu_items2_right %}
+					       {% endblock %}
+                                               </ul>
+                                             </div>
+                                           </div>
+                                         </nav>
+                                      </div>
+                                  </div>
+                              </div>
+                    
+                    </div>
+
+
+        {% endblock %}
+        {% block menu_spacer %}
+	<div class='gov_top_spacer'>
+		&nbsp;
+	</div>
+	<br><br><br>
+        {% endblock %}
+        <div class='body-wrapper'>
+
+        <div class="container">
+        </div>
+        {% block breadcrumbs %}
+        {% endblock %}
+        {% block messages %}
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        {% for message in messages %}
+                            <div class=" message|bootstrap_message_classes <<<---FIX alert-dismissable">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&#215;</button>
+                                {{ message|safe }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+        {% block content %}
+        {% endblock %}
+        {% block modals %}
+        {% endblock %}
+	{% block footer_js%}
+	{% endblock %}
+        {% block custom_js %}
+        {% endblock %}
+
+    </div>
+
+
+        {% block footer %}
+
+        <div class="row">
+            <div class="col-lg-12 " >
+                  <div style='border-top: 1px solid #f1f0f0; font-size:5px; margin-top: 10px;'>
+			&nbsp;
+		  </div>
+                  <div class='container'>
+                    <small>&copy; {{ footer_title }}</small>
+                </div>
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+        {% endblock footer %}
+</body>
+
+</html>

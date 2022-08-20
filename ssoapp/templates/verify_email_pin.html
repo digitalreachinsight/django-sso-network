@@ -1,0 +1,75 @@
+{% extends "base_template/base_b5.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block header_top_menu %}
+{% endblock %}
+
+{% block menu_spacer %}
+<br>
+{% endblock %}
+
+{% block content %}
+
+{% if request.user.is_authenticated %}
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3 col-sm-1">
+          </div>
+          <div class="col-md-6 col-sm-10">
+                  <h3>Login Success</h3>
+                  <div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
+                      <div class="p-2 text-success fw-bold">
+                       You currently logged in.
+                      </div>
+                  </div>
+
+
+          </div>
+          <div class="col-md-3 col-sm-1">
+          </div>
+        </div>
+      </div>
+{% else %}
+
+
+<style>
+.help-inline {
+color: red;
+}
+</style>
+<div class="container">
+  <div class="row">
+    <div class="col-md-3 col-sm-1">
+    </div>
+    <div class="col-md-6 col-sm-10">
+	    <h3>PIN code Verification</h3>	    
+<div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
+
+  <div class="p-2">
+     <!-- Content here -->
+     {% crispy form %}
+  </div>
+</div>
+
+
+    </div>
+    <div class="col-md-3 col-sm-1">
+    </div>
+  </div>
+</div>
+<script>
+$('#id_email_pin_code').keyup(function() { 
+var pin_code = this.value.replace(/[^\d.]/g, '');
+
+this.value = pin_code;
+// alert(this.value); 
+
+});
+
+</script>		
+{% endif %}
+
+
+{% endblock %}
+

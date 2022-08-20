@@ -1,0 +1,38 @@
+{% extends "base_template/base_b5.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block header_top_menu %}
+{% endblock %}
+
+{% block menu_spacer %}
+<br>
+{% endblock %}
+
+{% block content %}
+<style>
+.help-inline {
+color: red;
+}
+</style>
+<div class="container">
+  <div class="row">
+    <div class="col-md-3 col-sm-1">
+    </div>
+    <div class="col-md-6 col-sm-10">
+	    <h3>Login Success</h3>	    
+            <div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
+                <div class="p-2 text-success fw-bold">
+	         You have successfully authenticated. 
+                </div>
+            </div>
+
+
+    </div>
+    <div class="col-md-3 col-sm-1">
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
