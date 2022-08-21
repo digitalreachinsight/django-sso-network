@@ -70,21 +70,24 @@ class OTPForm(forms.ModelForm):
     def clean_pin_code(self):
         
         otp_match = False
-        email_otp = models.EmailOTP.objects.filter(email__email=self.cleaned_data['email_address'])
-        if email_otp.count() > 0:
-            for eotp in email_otp:
-                totp = pyotp.TOTP(eotp.otp_key)
-                if totp.now() == self.cleaned_data['pin_code']:
-                      otp_match = True
+        if 'email_address' in self.cleaned_data:
+            email_otp = models.EmailOTP.objects.filter(email__email=self.cleaned_data['email_address'])
+            if email_otp.count() > 0:
+                for eotp in email_otp:
+                    totp = pyotp.TOTP(eotp.otp_key)
+                    if totp.now() == self.cleaned_data['pin_code']:
+                          otp_match = True
 
-            if otp_match is True:
-                 return self.cleaned_data['pin_code']
+                if otp_match is True:
+                     return self.cleaned_data['pin_code']
+                else:
+                     raise forms.ValidationError('Invalid OTP pin code')
+
+
             else:
-                 raise forms.ValidationError('Invalid OTP pin code')
-
-
+                raise forms.ValidationError('Invalid OTP pin code')
         else:
-            raise forms.ValidationError('Invalid email address or OTP pin code')
+            raise forms.ValidationError('Invalid OTP pin code')
 
 
 

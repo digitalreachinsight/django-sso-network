@@ -140,3 +140,25 @@ class AuthRedirect(models.Model):
 
     def __str__(self):
         return "{} {}".format(self.domain_group, self.redirect_token)
+
+
+class AuthLog(models.Model):
+    """ Auth Attempt Log """
+
+    LOGIN_METHOD = (
+                ('otp', 'OTP'),
+                ('emailpin', 'Email PIN')
+             )
+
+    user_agent = models.CharField(max_length=255,)
+    ip_address = models.GenericIPAddressField(verbose_name='IP Address',null=True,)
+    email = models.CharField(max_length=255, null=True,)
+    login_method = models.CharField(max_length=100, choices=LOGIN_METHOD, null=True, blank=True,verbose_name='Login Method', help_text='', default='none') 
+    http_accept = models.CharField(verbose_name='HTTP Accept',max_length=1025,)
+    path_info = models.CharField(verbose_name='Path', max_length=255,)
+    attempt_time = models.DateTimeField(auto_now_add=True,)
+    login_valid = models.BooleanField(default=False,)
+
+    class Meta:
+        ordering = ['-attempt_time']
+

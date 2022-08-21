@@ -48,9 +48,31 @@ def send_email_pin(email_pin_obj):
        from_email = None
        context= {'context_processor': {}, 'signature': 'off', 'email_pin_obj' : email_pin_obj, 'pin_code_decrypted': decrypt_string(email_pin_obj.pin_code)}
        to = email_pin_obj.email
-       template_group = "system-oim"
+       template_group = 'none'
        emails.sendHtmlEmail([to],subject,context,template,cc,bcc,from_email,template_group,attachments=[])
     except:
        print("error sending email")
        return False
     return True
+
+
+def store_login_attempt(user_agent, ip_address, email, http_accept, path_info, login_valid,login_method):
+       models.AuthLog.objects.create(
+           user_agent=user_agent,
+           ip_address=ip_address,
+           email=email,
+           http_accept=http_accept,
+           path_info=path_info,
+           login_valid=login_valid,
+           login_method=login_method
+       )
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+       ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+       ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+

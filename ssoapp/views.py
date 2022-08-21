@@ -117,6 +117,13 @@ class OTPSignIn(CreateView):
     def post(self, request, *args, **kwargs):
         #if request.POST.get('cancel'):
         #    return HttpResponseRedirect(self.get_absolute_url())
+
+        user_agent = request.META.get('HTTP_USER_AGENT', '<unknown>')[:255]
+        ip_address = utils.get_client_ip(request)
+        http_accept = request.META.get('HTTP_ACCEPT', '<unknown>')
+        path_info = request.META.get('PATH_INFO', '<unknown>')
+        ip_key = 'ip_auth_block_'+ip_address
+        utils.store_login_attempt(user_agent, ip_address, request.POST.get('email_address','none'), http_accept, path_info, False, 'otp')
         return super(OTPSignIn, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -131,6 +138,14 @@ class OTPSignIn(CreateView):
         email_user.backend = 'django.contrib.auth.backends.ModelBackend'
         login(self.request, email_user)
 
+
+        user_agent = self.request.META.get('HTTP_USER_AGENT', '<unknown>')[:255]
+        ip_address = utils.get_client_ip(self.request)
+        http_accept = self.request.META.get('HTTP_ACCEPT', '<unknown>')
+        path_info = self.request.META.get('PATH_INFO', '<unknown>')
+        ip_key = 'ip_auth_block_'+ip_address
+        utils.store_login_attempt(user_agent, ip_address, email_user.email,http_accept, path_info, True, 'otp')
+
         return HttpResponseRedirect(reverse('login-succes'))
 
 
@@ -139,6 +154,7 @@ class EmailPinSignIn(CreateView):
     model = models.EmailUser
 
     def get(self, request, *args, **kwargs):
+        print ("PO")
         #context_processor = template_context(self.request)
         return super(EmailPinSignIn, self).get(request, *args, **kwargs)
 
@@ -158,6 +174,15 @@ class EmailPinSignIn(CreateView):
     def post(self, request, *args, **kwargs):
         #if request.POST.get('cancel'):
         #    return HttpResponseRedirect(self.get_absolute_url())
+
+        user_agent = request.META.get('HTTP_USER_AGENT', '<unknown>')[:255]
+        ip_address = utils.get_client_ip(request)
+        http_accept = request.META.get('HTTP_ACCEPT', '<unknown>')
+        path_info = request.META.get('PATH_INFO', '<unknown>')
+        ip_key = 'ip_auth_block_'+ip_address
+        utils.store_login_attempt(user_agent, ip_address, request.POST.get('email_address','none'), http_accept, path_info, False, 'emailpin')
+
+
         return super(EmailPinSignIn, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -165,6 +190,8 @@ class EmailPinSignIn(CreateView):
         forms_data = form.cleaned_data
         email_pin = utils.create_email_pin(forms_data['email_address'])
         send_email = utils.send_email_pin(email_pin)
+
+
         return HttpResponseRedirect('/verify/email-pin/'+email_pin.verify_key)
 
 
@@ -255,6 +282,13 @@ class VerifyEmailPIN(CreateView):
         email_user.backend = 'django.contrib.auth.backends.ModelBackend'
         #request.session.set_expiry(SESSION_EXPIRY_SSO)
         login(self.request, email_user)
+
+        user_agent = self.request.META.get('HTTP_USER_AGENT', '<unknown>')[:255]
+        ip_address = utils.get_client_ip(self.request)
+        http_accept = self.request.META.get('HTTP_ACCEPT', '<unknown>')
+        path_info = self.request.META.get('PATH_INFO', '<unknown>')
+        ip_key = 'ip_auth_block_'+ip_address
+        utils.store_login_attempt(user_agent, ip_address, email_user.email,http_accept, path_info, True, 'emailpin')
 
         return HttpResponseRedirect(reverse('login-succes'))
 

@@ -100,6 +100,8 @@ class EmailBase2(object):
 
 
 def sendHtmlEmail(to,subject,context,template,cc,bcc,from_email,template_group,attachments=None):
+    print ("SENDING EMAIL")
+    print (subject)
     email_instance = env('EMAIL_INSTANCE','DEV')
     email_delivery = env('EMAIL_DELIVERY', 'off')
     override_email = env('OVERRIDE_EMAIL', None)
@@ -128,12 +130,15 @@ def sendHtmlEmail(to,subject,context,template,cc,bcc,from_email,template_group,a
     django_version = int(str(django.VERSION[0])+''+str(django.VERSION[1]))
     pcontext = None 
     pcontext = context 
-
+    print ("aqui")
     context['version'] = settings.VERSION_NO
     # Custom Email Body Template
+    print ("aqui2")
     context['body'] = get_template(template).render(pcontext)
+    print ('aqui3')
     # Main Email Template Style ( body template is populated in the center
-
+    main_template = get_template('email/base_email.html').render(pcontext)
+    
     reply_to=None
 
     if attachments is None:
@@ -151,11 +156,13 @@ def sendHtmlEmail(to,subject,context,template,cc,bcc,from_email,template_group,a
             cc = override_email.split(",")
         if bcc:
             bcc = override_email.split(",")
+    print (to)
 
     if len(to) > 1:
+        print ("aqui 4")
         msg = EmailMultiAlternatives(subject, "Please open with a compatible html email client.", from_email=from_email, to=to, attachments=_attachments, cc=cc, bcc=bcc, reply_to=reply_to, headers={'System-Environment': email_instance})
         msg.attach_alternative(main_template, 'text/html')
-
+        print ("aqui5")
         #msg = EmailMessage(subject, main_template, to=[to_email],cc=cc, from_email=from_email)
         #msg.content_subtype = 'html'
         #if attachment1:
@@ -166,11 +173,14 @@ def sendHtmlEmail(to,subject,context,template,cc,bcc,from_email,template_group,a
              msg.send()
              email_log(str(log_hash)+' Successfully sent to mail gateway')
         except Exception as e:
-                email_log(str(log_hash)+' Error Sending - '+str(e))
+             email_log(str(log_hash)+' Error Sending - '+str(e))
     else:
-          msg = EmailMultiAlternatives(subject, "Please open with a compatible html email client.", from_email=from_email, to=to, attachments=_attachments, cc=cc, bcc=bcc, reply_to=reply_to, headers={'System-Environment': email_instance})
-          msg.attach_alternative(main_template, 'text/html')
+          print ("aqui 6")
 
+          msg = EmailMultiAlternatives(subject, "Please open with a compatible html email client.", from_email=from_email, to=to, attachments=_attachments, cc=cc, bcc=bcc, reply_to=reply_to, headers={'System-Environment': email_instance})
+          print ("aqui 6.1")
+          msg.attach_alternative(main_template, 'text/html')
+          print ("aqui7")
           #msg = EmailMessage(subject, main_template, to=to,cc=cc, from_email=from_email)
           #msg.content_subtype = 'html'
           #if attachment1:

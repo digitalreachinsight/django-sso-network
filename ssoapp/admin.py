@@ -31,3 +31,8 @@ class DomainGroupAdmin(ModelAdmin):
 class AuthRedirectAdmin(ModelAdmin):
       list_display = ('id','domain_group','redirect_token','expiry','created')
 
+@register(models.AuthLog)
+class AuthLog(ModelAdmin):
+       list_display = ('email','ip_address','user_agent','path_info','attempt_time','login_method','login_valid')
+       list_filter = ('email','login_valid')
+
