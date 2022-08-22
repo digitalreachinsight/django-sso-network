@@ -127,10 +127,29 @@ class DomainGroup(models.Model):
     domain = models.CharField(max_length=1024, unique=True)
     template_group = models.CharField(max_length=100)
     from_address =  models.CharField(max_length=500, default='no-reply@example.com')
+    enable_allowed_users = models.BooleanField(default=False,)
+    allowed_users = models.TextField(default='', blank=True, null=True)
+    lookup_order = models.IntegerField(default=100)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return "{}".format(self.domain)
+
+class DomainGroupAuthType(models.Model):
+
+    LOGIN_METHOD = (
+                ('otp', 'OTP'),
+                ('emailpin', 'Email PIN')
+             )
+
+
+    domain_group = models.ForeignKey(DomainGroup, blank=True, null=True, on_delete=models.PROTECT)
+    login_method = models.CharField(max_length=100, choices=LOGIN_METHOD, null=True, blank=True,verbose_name='Login Method', help_text='', default='none')
+    enabled = models.BooleanField(default=True,)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+         return "{}".format(self.domain_group)
 
 class AuthRedirect(models.Model):
     redirect_token = models.CharField(max_length=1024, unique=True)

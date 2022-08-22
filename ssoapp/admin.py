@@ -23,9 +23,16 @@ class EmailPin(ModelAdmin):
      list_display = ('id', 'email','verify_key','pin_code','expiry','status','created')
      readonly_fields=('verify_key','pin_code')
 
+
+class DomainGroupAuthType(admin.TabularInline):
+     model = models.DomainGroupAuthType
+     extra = 0
+
 @admin.register(models.DomainGroup)
 class DomainGroupAdmin(ModelAdmin):
      list_display = ('id','domain','created')
+     ordering = ('-lookup_order',)
+     inlines = [DomainGroupAuthType]
 
 @admin.register(models.AuthRedirect)
 class AuthRedirectAdmin(ModelAdmin):

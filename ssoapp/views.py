@@ -145,7 +145,7 @@ class OTPSignIn(CreateView):
         path_info = self.request.META.get('PATH_INFO', '<unknown>')
         ip_key = 'ip_auth_block_'+ip_address
         utils.store_login_attempt(user_agent, ip_address, email_user.email,http_accept, path_info, True, 'otp')
-
+        self.request.session['authtype'] = 'otp'
         return HttpResponseRedirect(reverse('login-succes'))
 
 
@@ -289,7 +289,7 @@ class VerifyEmailPIN(CreateView):
         path_info = self.request.META.get('PATH_INFO', '<unknown>')
         ip_key = 'ip_auth_block_'+ip_address
         utils.store_login_attempt(user_agent, ip_address, email_user.email,http_accept, path_info, True, 'emailpin')
-
+        self.request.session['authtype'] = 'emailpin'
         return HttpResponseRedirect(reverse('login-succes'))
 
 
@@ -304,6 +304,8 @@ def CheckAuth(request):
            session_id = get_session
 
      if request.user.is_authenticated:
+         #print ("Session")
+         #print (request.session)
          response = HttpResponse('Authenticated', content_type='text/plain', status=200)
          response['X-TestUser'] = 'test@test.com'
          if get_session:
@@ -318,8 +320,8 @@ from django.views.decorators.csrf import csrf_exempt
 # Session Verification
 @csrf_exempt
 def Auth(request):
-     print ("TRYING")
-     print (request.META)
+     #print ("TRYING")
+     #print (request.META)
 
      text = request.COOKIES.get('session','')
      cookie_session = request.COOKIES.get(settings.SESSION_COOKIE_NAME,'')
@@ -340,6 +342,10 @@ def Auth(request):
            session_id = cookie_session
 
      if request.user.is_authenticated: 
+         print ("Session")
+         print (request.session['authtype'])
+
+
          response = HttpResponse('Authenticated', content_type='text/plain', status=200)
         
          response['X-TestUser'] = 'test@test.com'
