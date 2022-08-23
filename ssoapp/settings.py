@@ -146,3 +146,11 @@ FERNET_KEY = env('FERNET_KEY',None)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 VERSION_NO = "1.0.1"
 STATIC_URL = '/static/'
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_DIR = os.path.join(BASE_DIR, 'media')
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+
+# MEDIA
+MEDIA_ROOT = MEDIA_DIR
+MEDIA_URL = '/media/'

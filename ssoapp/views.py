@@ -408,16 +408,20 @@ def AuthRedirect(request):
      else:
          redirect_token = 'GJHLKLKGJHD679797980987dsafasdfads'
          domain_group = None
-         dg = models.DomainGroup.objects.all()
+         dg = models.DomainGroup.objects.all().order_by("-lookup_order")
 
          for d in dg:
-             pattern = re.compile(d.domain)
              print (d.domain)
-             if pattern.match(HTTP_HOST):
-                  domain_group = d
-                  print ("TRUE")
+             if d.domain == "*":
+                 domain_group = d
+                 print ("TRUE")
              else:
-                 print ("FALSE")
+                 pattern = re.compile(d.domain)
+                 if pattern.match(HTTP_HOST):
+                      domain_group = d
+                      print ("TRUE")
+                 else:
+                     print ("FALSE")
 
          token_id = utils.create_token(64)
          models.AuthRedirect.objects.create(redirect_token=token_id,expiry=datetime.datetime.now()+datetime.timedelta(minutes=60), domain_group=domain_group)

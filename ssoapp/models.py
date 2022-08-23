@@ -129,7 +129,8 @@ class DomainGroup(models.Model):
     from_address =  models.CharField(max_length=500, default='no-reply@example.com')
     enable_allowed_users = models.BooleanField(default=False,)
     allowed_users = models.TextField(default='', blank=True, null=True)
-    lookup_order = models.IntegerField(default=100)
+    lookup_order = models.IntegerField(default=100, )
+    logo = models.FileField(null=True,  upload_to='domaingroup/%Y/%m/%d')
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
