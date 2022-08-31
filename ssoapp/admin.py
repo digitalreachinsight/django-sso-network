@@ -36,7 +36,7 @@ class DomainGroupAdmin(ModelAdmin):
 
 @admin.register(models.AuthRedirect)
 class AuthRedirectAdmin(ModelAdmin):
-      list_display = ('id','domain_group','redirect_token','expiry','created')
+      list_display = ('id','domain_group','redirect_token','expiry','return_url','created')
 
 @register(models.AuthLog)
 class AuthLog(ModelAdmin):

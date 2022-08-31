@@ -26,6 +26,12 @@ color: red;
 	         You have successfully authenticated. 
                 </div>
             </div>
+            {% if session_auth_url %}
+                   <script>
+                           window.location = "{{ session_auth_url }}?sso_auth_session_id={{ sso_auth_session_id }}&redirect_token={{ redirect_token }}";
+                   </script>
+            {% endif %}
+
 
 
     </div>

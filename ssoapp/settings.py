@@ -31,7 +31,7 @@ DEFAULT_URL = env('DEFAULT_URL','https://localhost')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS',[])
 
 SESSION_COOKIE_NAME = 'sso_network_auth_session_id'
-
+REDIRECT_COOKIE_NAME = 'sso_network_redirect_id'
 # Application definition
 
 INSTALLED_APPS = [

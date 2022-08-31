@@ -131,6 +131,7 @@ class DomainGroup(models.Model):
     allowed_users = models.TextField(default='', blank=True, null=True)
     lookup_order = models.IntegerField(default=100, )
     logo = models.FileField(null=True,  upload_to='domaingroup/%Y/%m/%d')
+    session_auth_url = models.CharField(max_length=2048, default='')
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -156,6 +157,7 @@ class AuthRedirect(models.Model):
     redirect_token = models.CharField(max_length=1024, unique=True)
     domain_group = models.ForeignKey(DomainGroup, blank=True, null=True, on_delete=models.PROTECT)  
     expiry = models.DateTimeField(null=True, blank=True)
+    return_url = models.CharField(max_length=2048, default='')
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
