@@ -503,7 +503,7 @@ def AuthRedirect(request):
      redirect_token = auth_redirect_token.redirect_token
 
      #AuthRedirect
-     response = HttpResponse('Preparing to direct .... '+token_id+' <script>window.location.href="'+DEFAULT_URL+'?auth_token='+redirect_token+'";</script>', content_type='text/html', status=200)
+     response = HttpResponse('Preparing to direct ....<script>window.location.href="'+DEFAULT_URL+'?auth_token='+redirect_token+'";</script>', content_type='text/html', status=200)
      response['X-TOKENID'] = '093098124098312089kjaslkjjflkdas'
      response.set_cookie(settings.REDIRECT_COOKIE_NAME, redirect_token,)
      return response
