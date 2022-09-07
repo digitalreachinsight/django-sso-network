@@ -65,7 +65,6 @@ class LoginSuccess(TemplateView):
         context['redirect_token'] = self.request.COOKIES.get(settings.REDIRECT_COOKIE_NAME,None)
 
         redirect_token = context['redirect_token']
-        print (redirect_token)
         if redirect_token:
              auth_redirect = {}
              auth_redirect_obj = models.AuthRedirect.objects.filter(redirect_token=redirect_token)
@@ -87,20 +86,17 @@ class HomePage(CreateView):
         context = super(HomePage, self).get_context_data(**kwargs)
         context['query_string'] = ''
         context['sso_auth_session_id'] = self.request.COOKIES.get(settings.SESSION_COOKIE_NAME,'')
+        context['sso_network_redirect_id'] = self.request.COOKIES.get(settings.REDIRECT_COOKIE_NAME,'')
         context['referer'] = self.request.GET.get('referer',None)
-        request = self.request 
+        context['app_auth_url'] = self.request.GET.get('app_auth_url','')
+        request = self.request
+
         REFERAL_URL=request.META.get('HTTP_REFERER', '')
         HTTP_HOST=request.META.get('HTTP_HOST',None)
         DEFAULT_URL=settings.DEFAULT_URL 
         domain_group = None
         dg = models.DomainGroup.objects.all().order_by("-lookup_order")
         for d in dg:
-            print (d.domain)
-            #if d.domain == "*" and domain_group is None:
-            #    domain_group = d
-            #    print ("TRUE")
-            #else:
-            #pattern = re.compile(d.domain)
             if d.domain != "*":
                 pattern = ".+"+d.domain+".+"
                 if REFERAL_URL:
@@ -113,14 +109,22 @@ class HomePage(CreateView):
                 if domain_group is None:
                     domain_group = d
 
-        token_id = utils.create_token(64)
-        auth_redirect_token = models.AuthRedirect.objects.create(redirect_token=token_id,expiry=datetime.datetime.now()+datetime.timedelta(minutes=60), domain_group=domain_group, return_url=REFERAL_URL)
-        redirect_token = auth_redirect_token.redirect_token
-        context['redirect_cookie_name'] = settings.REDIRECT_COOKIE_NAME
-        context['redirect_token'] = redirect_token
-        context['session_auth_url'] = auth_redirect_token.domain_group.session_auth_url
+        #token_id = utils.create_token(64)
+        #auth_redirect_token = models.AuthRedirect.objects.create(redirect_token=token_id,expiry=datetime.datetime.now()+datetime.timedelta(minutes=60), domain_group=domain_group, return_url=context['app_auth_url'])
+
+        #redirect_token = auth_redirect_token.redirect_token
+        #context['redirect_cookie_name'] = settings.REDIRECT_COOKIE_NAME
+        #context['redirect_token'] = redirect_token
+        #context['session_auth_url'] = auth_redirect_token.domain_group.session_auth_url
+
         if request.user.is_authenticated:
-            pass
+            auth_redirect_token = models.AuthRedirect.objects.filter(redirect_token=context['sso_network_redirect_id'])
+            if auth_redirect_token.count() > 0:
+                 redirect_token = auth_redirect_token[0].redirect_token
+                 context['redirect_cookie_name'] = settings.REDIRECT_COOKIE_NAME
+                 context['redirect_token'] = redirect_token
+                 context['session_auth_url'] = auth_redirect_token[0].domain_group.session_auth_url
+
         else:
             pass
 
@@ -207,7 +211,6 @@ class EmailPinSignIn(CreateView):
     model = models.EmailUser
 
     def get(self, request, *args, **kwargs):
-        print ("PO")
         #context_processor = template_context(self.request)
         return super(EmailPinSignIn, self).get(request, *args, **kwargs)
 
@@ -383,15 +386,15 @@ def Auth(request):
      #print (loader.render_to_string( 'cookie_session.html', {'title': "TEWST", 'cal': "CAL:"}))
 
      if get_session:
+           auth_redirect = {}
            session_id = get_session
            if redirect_token:
-                auth_redirect = {}
                 auth_redirect_obj = models.AuthRedirect.objects.filter(redirect_token=redirect_token)
                 if auth_redirect_obj.count() > 0:
                     auth_redirect = auth_redirect_obj[0]
 
 
-           cs = loader.render_to_string( 'redirect_session.html', {'auth_redirect': auth_redirect})
+           cs = loader.render_to_string( 'redirect_session.html', {'auth_redirect': auth_redirect, 'redirect_token': redirect_token})
            response = HttpResponse(cs, content_type='text/html', status=200)
            response.set_cookie(settings.SESSION_COOKIE_NAME, get_session ) 
            return response
@@ -399,10 +402,6 @@ def Auth(request):
            session_id = cookie_session
 
      if request.user.is_authenticated: 
-         print ("Session")
-         print (request.session['authtype'])
-
-
          response = HttpResponse('Authenticated', content_type='text/plain', status=200)
         
          response['X-TestUser'] = 'test@test.com'
@@ -418,17 +417,10 @@ def Auth(request):
          response = HttpResponse('Unable to find valid session', content_type='text/plain', status=403)
          response['X-TOKENID'] = '093098124098312089kjaslkjjflkdas'
 
-     print (response)
-     print ("5")
      return response
 
 @csrf_exempt
 def AuthRedirect(request):
-     print ("TRYING")
-     print (request.META.get('HTTP_REFERER', None))
-     #print (request.META)
-     print ("END OF TRYING")
-
      REFERAL_URL=request.META.get('HTTP_REFERER', None)
      HTTP_HOST=request.META.get('HTTP_HOST',None)
      DEFAULT_URL=settings.DEFAULT_URL
@@ -438,61 +430,57 @@ def AuthRedirect(request):
      #get_session = request.GET.get('sso_auth_session_id',None)
      get_session = request.GET.get(settings.SESSION_COOKIE_NAME,None)
      referer = request.GET.get('referer','')
+     app_auth_url = request.GET.get('app_auth_url','')
 
      session_id = None
-     print ("SESS")
-     print (get_session)
      #print (loader.render_to_string( 'cookie_session.html', {'title': "TEWST", 'cal': "CAL:"}))
-     if get_session:
-           session_id = get_session
-           cs = loader.render_to_string( 'cookie_session.html', {'referer': referer})
-           response = HttpResponse(cs, content_type='text/html', status=200)
-           #response.set_cookie('sso_auth_session_id', get_session )
-           response.set_cookie(settings.SESSION_COOKIE_NAME, get_session )
+     #if get_session:
+     #      session_id = get_session
+     #      cs = loader.render_to_string( 'cookie_session.html', {'referer': referer})
+     #      response = HttpResponse(cs, content_type='text/html', status=200)
+     #      #response.set_cookie('sso_auth_session_id', get_session )
+     #      response.set_cookie(settings.SESSION_COOKIE_NAME, get_session )
 
-           response = HttpResponseRedirect(referer)
-           return response
-     else:
-           session_id = cookie_session
+     #      response = HttpResponseRedirect(referer)
+     #      return response
+     #else:
+     #      session_id = cookie_session
 
-     if request.user.is_authenticated:
-         response = HttpResponse('Authenticated', content_type='text/plain', status=200)
+     #if request.user.is_authenticated:
+     #    response = HttpResponse('Authenticated', content_type='text/plain', status=200)
 
-         response['X-TestUser'] = 'test@test.com'
-         response['X-REMOTEUSER'] = request.user.email
-         response['X-LASTNAME'] = request.user.last_name
-         response['X-FIRSTNAME'] = request.user.first_name
-         response['X-EMAIL'] = request.user.email
+     #    response['X-TestUser'] = 'test@test.com'
+     #    response['X-REMOTEUSER'] = request.user.email
+     #    response['X-LASTNAME'] = request.user.last_name
+     #    response['X-FIRSTNAME'] = request.user.first_name
+     #    response['X-EMAIL'] = request.user.email
 
-         if get_session:
-               #response.set_cookie('sso_auth_session_id', get_session)
-               response.set_cookie(settings.SESSION_COOKIE_NAME, get_session )
-               response = HttpResponseRedirect(referer)
-     else:
-         redirect_token = 'GJHLKLKGJHD679797980987dsafasdfads'
-         domain_group = None
-         dg = models.DomainGroup.objects.all().order_by("-lookup_order")
-
-         for d in dg:
-             print (d.domain)
-             if d.domain == "*":
+     #    if get_session:
+     #          #response.set_cookie('sso_auth_session_id', get_session)
+     #          response.set_cookie(settings.SESSION_COOKIE_NAME, get_session )
+     #          response = HttpResponseRedirect(referer)
+     #else:
+     redirect_token = 'GJHLKLKGJHD679797980987dsafasdfads'
+     domain_group = None
+     dg = models.DomainGroup.objects.all().order_by("lookup_order")
+     for d in dg:
+         if d.domain == "*":
+             domain_group = d
+         else:
+             #pattern = re.compile(r'.*'+d.domain+'.*')
+             #print ( 
+             #if pattern.match(app_auth_url.lower()):
+             if d.domain in app_auth_url.lower():
                  domain_group = d
-                 print ("TRUE")
-             else:
-                 pattern = re.compile(d.domain)
-                 if pattern.match(HTTP_HOST):
-                      domain_group = d
-                      print ("TRUE")
-                 else:
-                     print ("FALSE")
 
-         token_id = utils.create_token(64)
-         auth_redirect_token = models.AuthRedirect.objects.create(redirect_token=token_id,expiry=datetime.datetime.now()+datetime.timedelta(minutes=60), domain_group=domain_group)
-         redirect_token = auth_redirect_token.redirect_token 
-         #AuthRedirect
-         response = HttpResponse('Preparing to direct .... '+token_id+' <script>window.location.href="'+DEFAULT_URL+'?auth_token='+redirect_token+'";</script>', content_type='text/html', status=200)
-         response['X-TOKENID'] = '093098124098312089kjaslkjjflkdas'
+     token_id = utils.create_token(64)
+     auth_redirect_token = models.AuthRedirect.objects.create(redirect_token=token_id,expiry=datetime.datetime.now()+datetime.timedelta(minutes=60), domain_group=domain_group, return_url=app_auth_url)
+     redirect_token = auth_redirect_token.redirect_token
 
+     #AuthRedirect
+     response = HttpResponse('Preparing to direct .... '+token_id+' <script>window.location.href="'+DEFAULT_URL+'?auth_token='+redirect_token+'";</script>', content_type='text/html', status=200)
+     response['X-TOKENID'] = '093098124098312089kjaslkjjflkdas'
+     response.set_cookie(settings.REDIRECT_COOKIE_NAME, redirect_token,)
      return response
 
 

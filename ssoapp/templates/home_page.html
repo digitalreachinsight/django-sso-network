@@ -11,7 +11,7 @@
 
 {% block content %}
 <script>
-	createCookie("{{ redirect_cookie_name }}", "{{ redirect_token }}");
+	// createCookie("{{ redirect_cookie_name }}", "{{ redirect_token }}");
 </script>	
 {% if request.user.is_authenticated %}
       <div class="container">
@@ -26,14 +26,13 @@
                       </div>
                   </div>
 
-
 		  {% if session_auth_url %}
                          <script>
 				 window.location = "{{ session_auth_url }}?sso_auth_session_id={{ sso_auth_session_id }}&redirect_token={{ redirect_token }}";
                          </script>
                   {% endif %}
 
-                  {% if referer %}
+                  {% if old_referer %}
                          <script>
                          window.location = "{{ referer }}auth?sso_auth_session_id={{ sso_auth_session_id }}&referer={{ referer }}";
                          </script>
