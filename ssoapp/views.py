@@ -95,19 +95,19 @@ class HomePage(CreateView):
         HTTP_HOST=request.META.get('HTTP_HOST',None)
         DEFAULT_URL=settings.DEFAULT_URL 
         domain_group = None
-        dg = models.DomainGroup.objects.all().order_by("-lookup_order")
-        for d in dg:
-            if d.domain != "*":
-                pattern = ".+"+d.domain+".+"
-                if REFERAL_URL:
-                    if re.match(pattern, REFERAL_URL):
-                         domain_group = d
-                         print ("TRUE")
-                    else:
-                         print ("FALSE")
-            if d.domain == "*":
-                if domain_group is None:
-                    domain_group = d
+        #dg = models.DomainGroup.objects.all().order_by("-lookup_order")
+        #for d in dg:
+        #    if d.domain != "*":
+        #        pattern = ".+"+d.domain+".+"
+        #        if REFERAL_URL:
+        #            if re.match(pattern, REFERAL_URL):
+        #                 domain_group = d
+        #                 print ("TRUE")
+        #            else:
+        #                 print ("FALSE")
+        #    if d.domain == "*":
+        #        if domain_group is None:
+        #            domain_group = d
 
         #token_id = utils.create_token(64)
         #auth_redirect_token = models.AuthRedirect.objects.create(redirect_token=token_id,expiry=datetime.datetime.now()+datetime.timedelta(minutes=60), domain_group=domain_group, return_url=context['app_auth_url'])
@@ -124,9 +124,15 @@ class HomePage(CreateView):
                  context['redirect_cookie_name'] = settings.REDIRECT_COOKIE_NAME
                  context['redirect_token'] = redirect_token
                  context['session_auth_url'] = auth_redirect_token[0].domain_group.session_auth_url
+                 context['auth_redirect_token'] = auth_redirect_token
+                 context['page_logo'] = auth_redirect_token[0].logo
 
         else:
-            pass
+            auth_redirect_token = models.AuthRedirect.objects.filter(redirect_token=context['sso_network_redirect_id'])
+            if auth_redirect_token.count() > 0:
+                redirect_token = auth_redirect_token[0].redirect_token
+                context['page_logo'] = auth_redirect_token[0].domain_group.logo
+                context['auth_redirect_token'] = auth_redirect_token
 
         return context
 
@@ -160,7 +166,17 @@ class OTPSignIn(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(OTPSignIn, self).get_context_data(**kwargs)
+        context['sso_network_redirect_id'] = self.request.COOKIES.get(settings.REDIRECT_COOKIE_NAME,'')
+
         context['query_string'] = ''
+  
+        auth_redirect_token = models.AuthRedirect.objects.filter(redirect_token=context['sso_network_redirect_id'])
+        if auth_redirect_token.count() > 0:
+            redirect_token = auth_redirect_token[0].redirect_token
+            context['page_logo'] = auth_redirect_token[0].domain_group.logo
+            context['auth_redirect_token'] = auth_redirect_token
+
+
         return context
 
     def get_initial(self):
@@ -217,6 +233,15 @@ class EmailPinSignIn(CreateView):
     def get_context_data(self, **kwargs):
         context = super(EmailPinSignIn, self).get_context_data(**kwargs)
         context['query_string'] = ''
+        context['sso_network_redirect_id'] = self.request.COOKIES.get(settings.REDIRECT_COOKIE_NAME,'')
+
+        auth_redirect_token = models.AuthRedirect.objects.filter(redirect_token=context['sso_network_redirect_id'])
+        if auth_redirect_token.count() > 0:
+            redirect_token = auth_redirect_token[0].redirect_token
+            context['page_logo'] = auth_redirect_token[0].domain_group.logo
+            context['auth_redirect_token'] = auth_redirect_token
+
+
         return context
 
     def get_initial(self):
