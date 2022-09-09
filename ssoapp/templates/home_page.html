@@ -83,12 +83,38 @@ margin-bottom:20px;
 
 
 </style>
+
+<style>
+
+.logo-thumb-img {
+        border: 1px solid #cbbbbb;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+	margin-bottom: 20px;
+}
+
+</style>
+
 <div class="container">
   <div class="row">
     <div class="col-md-3 col-sm-1">
     </div>
     <div class="col-md-6 col-sm-10">
-	    <h3>Sign-In</h3>	    
+           <div class="row">
+	    <div class="col-md-8 col-sm-8">
+	    <h3>Sign-In 
+            </h3>
+	    </div>
+            <div class="col-md-4 col-sm-4 text-end">
+                   {% if page_logo %}
+                   <h1 id="site-title" class="site-logo">
+                              <img src="{{ page_logo.url }}" alt="{{ title_header }}" class="logo-thumb-img"/>
+                   </h1>
+		   {% endif %}
+            </div> 
+            </div>
+
             <div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
             <div class="d-grid gap-2"> 
                 <div style="background-color:#ededed; padding: 8px; border-radius: 5px 5px 5px 5px; ">To login to your account please choose a sign in option below.</div>

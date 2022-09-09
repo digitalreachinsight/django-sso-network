@@ -64,14 +64,16 @@ class LoginSuccess(TemplateView):
         context['redirect_cookie_name'] = settings.REDIRECT_COOKIE_NAME
         context['redirect_token'] = self.request.COOKIES.get(settings.REDIRECT_COOKIE_NAME,None)
 
+        auth_redirect = None
         redirect_token = context['redirect_token']
         if redirect_token:
              auth_redirect = {}
              auth_redirect_obj = models.AuthRedirect.objects.filter(redirect_token=redirect_token)
              if auth_redirect_obj.count() > 0:
                  auth_redirect = auth_redirect_obj[0]
-        context['auth_redirect'] = auth_redirect
-        context['session_auth_url'] = auth_redirect.domain_group.session_auth_url
+        if auth_redirect:
+            context['auth_redirect'] = auth_redirect
+            context['session_auth_url'] = auth_redirect.domain_group.session_auth_url
         return context
 
 class HomePage(CreateView):
@@ -125,7 +127,8 @@ class HomePage(CreateView):
                  context['redirect_token'] = redirect_token
                  context['session_auth_url'] = auth_redirect_token[0].domain_group.session_auth_url
                  context['auth_redirect_token'] = auth_redirect_token
-                 context['page_logo'] = auth_redirect_token[0].logo
+                 print ("auth_redirect_token")
+                 context['page_logo'] = auth_redirect_token[0].domain_group.logo
 
         else:
             auth_redirect_token = models.AuthRedirect.objects.filter(redirect_token=context['sso_network_redirect_id'])

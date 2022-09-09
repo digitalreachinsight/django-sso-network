@@ -75,8 +75,12 @@ class OTPForm(forms.ModelForm):
             if email_otp.count() > 0:
                 for eotp in email_otp:
                     totp = pyotp.TOTP(eotp.otp_key)
-                    if totp.now() == self.cleaned_data['pin_code']:
-                          otp_match = True
+                    
+                    try:
+                        if totp.now() == self.cleaned_data['pin_code']:
+                             otp_match = True
+                    except:
+                        print ("token base32 error")
 
                 if otp_match is True:
                      return self.cleaned_data['pin_code']
