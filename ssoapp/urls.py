@@ -21,6 +21,7 @@ from django_crispy_jcaptcha import urls as jcaptchaurls
 from django.conf.urls.static import static
 from django.conf import settings
 from django.conf.urls.static import static
+from django_media_serv.urls import urlpatterns as media_serv_patterns
 
 urlpatterns = [
     path('',views.HomePage.as_view(), name='home'),
@@ -39,7 +40,7 @@ urlpatterns = [
     path('check-auth/', views.Auth, name='check-auth'),
     path('logout/', views.sso_logout, name='sso_logout'),
     path('', include(jcaptchaurls))
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + media_serv_patterns 
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # test
