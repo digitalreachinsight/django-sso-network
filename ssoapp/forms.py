@@ -3,13 +3,23 @@ from ssoapp import models
 from ssoapp import utils
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, HTML, Fieldset, MultiField, Div, Button
-from django.forms import Form, ModelForm, ChoiceField, FileField, CharField, Textarea, ClearableFileInput, HiddenInput, Field, RadioSelect, ModelChoiceField, Select, CheckboxInput
+from django.forms import Form, ModelForm, ChoiceField, FileField, CharField, Textarea, ClearableFileInput, HiddenInput, Field, RadioSelect, ModelChoiceField, Select, CheckboxInput, EmailField
 from django_crispy_jcaptcha.widget import CaptchaImages, CaptchaValidation
+#from django.contrib.auth import forms
+from django.contrib.auth import (
+    authenticate, get_user_model, password_validation,
+)
+from django.core.exceptions import ValidationError
+
 import datetime
 import dns.resolver
 import socket
 import re
 import pyotp
+
+def check_email_exists(value):
+     if models.EmailUser.objects.filter(email=value).exists():
+         raise ValidationError(u'The email address is already registered.')
 
 class BaseFormHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -213,6 +223,44 @@ class VerifyEmailPinForm(forms.ModelForm):
         return self.cleaned_data['email_pin_code']
 
 
+class Registration(ModelForm):
+    email = EmailField(max_length=254, widget=forms.TextInput(attrs={'class' : 'form-control', 'placeholder':'Email' }), validators=[check_email_exists])
+    first_name = CharField(max_length=254,  widget=forms.TextInput(attrs={'class' : 'form-control', 'placeholder':'First Name'}))
+    last_name = CharField(max_length=254, widget=forms.TextInput(attrs={'class' : 'form-control', 'placeholder':'Last Name'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class' : 'form-control', 'placeholder':'Password' }))
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'class' : 'form-control', 'placeholder':'Confirm Password' }))
+    captcha = CharField(required=False,widget=CaptchaImages(attrs={}))
 
+    class Meta:
+        model = models.EmailUser
+        fields = ['email','first_name','last_name','password','confirm_password']
 
+    def clean_password(self):
+        print (self.cleaned_data['password'])
+        print (self.cleaned_data['email'])
+        print (self.cleaned_data['confirm_password'])
+        if self.cleaned_data['password'] != self.cleaned_data['confirm_password']:
+             raise forms.ValidationError("The password's provided do not match")
+        if len(self.cleaned_data['password']) <  4:
+             raise forms.ValidationError("Invalid Password Length")
+
+        return self.cleaned_data['password']
+
+    def clean_captcha(self):
+        CaptchaValidation(self.cleaned_data['captcha'], forms)
+        return self.cleaned_data['captcha']
+
+    def __init__(self, *args, **kwargs):
+        # User must be passed in as a kwarg.
+        user = kwargs.pop('user')
+        super(Registration, self).__init__(*args, **kwargs)
+        self.helper = BaseFormHelper()
+
+        self.helper.form_id = 'id_form_register2_account'
+        self.helper.attrs = {'novalidate': ''}
+        self.helper.form_show_labels = False
+
+        #self.fields['username'].widget.attrs.update({'class': 'form-control'})
+
+        self.helper.layout = Layout(HTML('<h1 class="h3 mb-3 font-weight-normal">Registration</h1>'),'username','email','first_name','last_name','password','confirm_password','captcha',Button('create-account', 'Register Account', css_class="btn btn-primary"), HTML("{% include 'registration/registration_script.html' %}"))
 

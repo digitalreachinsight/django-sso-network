@@ -2,25 +2,24 @@
 
 <!DOCTYPE html>
 <html lang="en" >
-
     <head>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
          
         {% block header_js %}
-	    <script src="/static/common_addons/node_modules/jquery/dist/jquery.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/moment/min/moment.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/@popperjs/core/dist/umd/popper.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/bootstrap/dist/js/bootstrap.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="{{ settings.DEFAULT_URL }}/static/common_addons/node_modules/jquery/dist/jquery.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="{{ settings.DEFAULT_URL }}/static/common_addons/node_modules/moment/min/moment.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="{{ settings.DEFAULT_URL }}/static/common_addons/node_modules/@popperjs/core/dist/umd/popper.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="{{ settings.DEFAULT_URL }}/static/common_addons/node_modules/bootstrap/dist/js/bootstrap.js?ver={{ GIT_COMMIT_HASH }}"></script>
 
-	    <script src="static/js/common.js?ver={{ GIT_COMMIT_HASH }}"></script>
+	    <script src="{{ settings.DEFAULT_URL }}static/js/common.js?ver={{ GIT_COMMIT_HASH }}"></script>
 	{% endblock %}
 
 	{% block header_css %}
-	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/daterangepicker/daterangepicker.css?ver={{ GIT_COMMIT_HASH }}" />
-	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap/dist/css/bootstrap.css?ver={{ GIT_COMMIT_HASH }}" />
-	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap-icons/font/bootstrap-icons.css?ver={{ GIT_COMMIT_HASH }}"/>
+	<link rel="stylesheet" type="text/css" href="{{ settings.DEFAULT_URL }}/static/common_addons/node_modules/daterangepicker/daterangepicker.css?ver={{ GIT_COMMIT_HASH }}" />
+	<link rel="stylesheet" type="text/css" href="{{ settings.DEFAULT_URL }}/static/common_addons/node_modules/bootstrap/dist/css/bootstrap.css?ver={{ GIT_COMMIT_HASH }}" />
+	<link rel="stylesheet" type="text/css" href="{{ settings.DEFAULT_URL }}/static/common_addons/node_modules/bootstrap-icons/font/bootstrap-icons.css?ver={{ GIT_COMMIT_HASH }}"/>
 	{% endblock %}
          
         {% block extra_js %}

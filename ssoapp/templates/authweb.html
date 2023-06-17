@@ -1,0 +1,165 @@
+{% extends "base_template/base_b5.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block header_top_menu %}
+{% endblock %}
+
+{% block menu_spacer %}
+<br>
+{% endblock %}
+
+{% block content %}
+<script>
+	// createCookie("{{ redirect_cookie_name }}", "{{ redirect_token }}");
+</script>	
+{% block main_menu %}
+{% endblock %}
+
+{% if request.user.is_authenticated %}
+     
+<style>
+
+.logo-thumb-img {
+        border: 1px solid #cbbbbb;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        margin-bottom: 20px;
+}
+
+</style>
+
+
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3 col-sm-1">
+          </div>
+          <div class="col-md-6 col-sm-10">
+		  <div class="row">
+                     <div class="col-md-8 col-sm-8">
+                     <h3>Access Denied
+                     </h3>
+                     </div>
+                     <div class="col-md-4 col-sm-4 text-end">
+                            {% if page_logo %}
+                            <h1 id="site-title" class="site-logo">
+				    <img src="{{ settings.DEFAULT_URL }}{{ page_logo.url }}" alt="{{ title_header }}" class="logo-thumb-img"/>
+                            </h1>
+                            {% endif %}
+                     </div>
+
+                     <div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
+                         <div class="col-12 p-2 text-danger fw-bold">
+                                   Your do not have access to this service,  Please logout and login with an authorised account.
+		           	<br><br>
+                          </div>
+		          <div class="col-12 p-2 text-danger fw-bold">
+		                   <a href='/logout/' class='btn btn-primary'>Logout</a>
+		          </div>
+                     </div>
+                 </div> 
+      
+          </div>
+          <div class="col-md-3 col-sm-1">
+          </div>
+        </div>
+      </div>
+{% else %}
+
+
+<style>
+
+
+.help-inline {
+color: red;
+}
+#id_email_pin_form label {
+  font-weight: bold;
+}	    
+.asteriskField  {
+  color: red;
+}
+.control-group {
+margin-bottom:20px;
+}
+.ssoapp-jcaptcha-matches {
+    border: 1px solid #bdbdbd;
+    padding: 3px;
+    margin: 2px;
+    margin-right: 2px;
+    cursor: pointer;
+}
+.accordion-button:not(.collapsed) {
+    color: #ffffff;
+    background-color: #585858;
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 13%);
+}		 
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+
+    transform: rotate(-180deg);
+}
+.test {
+    filter: invert(100%);
+    -webkit-filter: invert(100%);
+}
+
+
+</style>
+
+<style>
+
+.logo-thumb-img {
+        border: 1px solid #cbbbbb;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+	margin-bottom: 20px;
+}
+
+</style>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3 col-sm-1">
+    </div>
+    <div class="col-md-6 col-sm-10">
+           <div class="row">
+	    <div class="col-md-8 col-sm-8">
+	    <h3>Sign-In 
+            </h3>
+	    </div>
+            <div class="col-md-4 col-sm-4 text-end">
+                   {% if page_logo %}
+                   <h1 id="site-title" class="site-logo">
+                              <img src="{{ page_logo.url }}" alt="{{ title_header }}" class="logo-thumb-img"/>
+                   </h1>
+		   {% endif %}
+            </div> 
+            </div>
+            <div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
+            <div class="d-grid gap-2">
+                <div style="background-color:#ededed; padding: 8px; border-radius: 5px 5px 5px 5px; ">To login to your account please choose a sign in option below.</div>
+                {% if emailpin_allow is True %}
+
+                <button type="button" class="btn btn-outline-primary" onclick="window.location='/sign-in/email-pin/';"><i class="bi bi-envelope-paper-fill"></i>&nbsp;&nbsp;Login with Email PIN</button>
+		{% endif %}
+		{% if login_allow is True %}
+		<button type="button" class="btn btn-outline-primary"><i class="bi bi-key-fill"></i>&nbsp;&nbsp;Login with Password</button>
+		{% endif %}
+		{% if otp_allow is True %}
+		<button type="button" class="btn btn-outline-primary" onclick="window.location='/sign-in/otp/';"><i class="bi bi-123"></i>&nbsp;&nbsp;Login with OTP</button>
+		{% endif %}
+
+
+	    <div>
+
+
+    </div>
+    <div class="col-md-3 col-sm-1">
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

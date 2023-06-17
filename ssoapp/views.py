@@ -17,6 +17,11 @@ from ssoapp import forms as app_forms
 from ssoapp import context_processors
 from ssoapp import utils
 from django.conf import settings
+from django.contrib.auth import views as auth_views
+from django.contrib.auth import login as auth_login
+#from django.contrib.auth import forms as auth_forms
+from ssoapp import auth_form
+
 import string
 import random
 import datetime
@@ -137,6 +142,21 @@ class HomePage(CreateView):
                 context['page_logo'] = auth_redirect_token[0].domain_group.logo
                 context['auth_redirect_token'] = auth_redirect_token
 
+                domaingroupauthtype = models.DomainGroupAuthType.objects.filter(domain_group=auth_redirect_token[0].domain_group, enabled=True)
+
+                context['otp_allow'] = False
+                context['emailpin_allow'] = False
+                context['login_allow'] = False
+                for dgat in domaingroupauthtype:
+                    if dgat.login_method == 'otp':
+                        context['otp_allow'] = True
+                    if dgat.login_method == 'emailpin':
+                        context['emailpin_allow'] = True
+                    if dgat.login_method == 'loginuserpass':
+                        context['login_allow'] = True
+
+
+
         return context
 
     def get_initial(self):
@@ -223,6 +243,62 @@ class OTPSignIn(CreateView):
         utils.store_login_attempt(user_agent, ip_address, email_user.email,http_accept, path_info, True, 'otp')
         self.request.session['authtype'] = 'otp'
         return HttpResponseRedirect(reverse('login-succes'))
+
+
+class RegisterAccount(CreateView):
+    model = models.EmailUser 
+    form_class = app_forms.Registration
+    template_name = 'registration/register_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(RegisterAccount, self).get_context_data(**kwargs)
+        #por = Portal()
+        #por.request = self.request
+        #por.kwargs = self.kwargs
+        #por.context = context
+        #datetime.datetime.strptime('20/01/2017', '%d/%m/%Y')
+        #context = por.get_context_data(**kwargs)
+        #del context['template_body']
+        context['page_heading'] = 'Registration'
+        context['page_description'] = 'Please complete the form below to register and account.'
+        #context['RECAPTCHA_SITE_KEY'] = settings.RECAPTCHA_SITE_KEY
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super(RegisterAccount, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_initial(self):
+        initial = super(RegisterAccount, self).get_initial()
+        return initial
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('cancel'):
+            return HttpResponseRedirect(reverse('home_page'))
+        return super(RegisterAccount, self).post(request, *args, **kwargs)
+
+    def get_client_ip(self,request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+           ip = x_forwarded_for.split(',')[0]
+        else:
+           ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+    def form_valid(self, form):
+        """Override form_valid to set the assignee as the object creator.
+        """
+        forms_data = form.cleaned_data
+        self.object = form.save(commit=False)
+
+        user = models.EmailUser.objects.create_user(self.object.email.lower(), self.object.password)
+        user.first_name = self.object.first_name
+        user.last_name = self.object.last_name
+        user.save()
+
+        return HttpResponseRedirect("/")
+
 
 
 class EmailPinSignIn(CreateView):
@@ -401,6 +477,48 @@ def CheckAuth(request):
 
 from django.views.decorators.csrf import csrf_exempt
 
+
+#def AuthWeb(request):
+
+#   response = HttpResponse('For testing', content_type='text/plain', status=200)
+#    return response
+
+
+class AuthWeb(TemplateView):
+    template_name = 'authweb.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AuthWeb, self).get_context_data(**kwargs)
+        #context['sso_network_redirect_id'] = self.request.COOKIES.get(settings.REDIRECT_COOKIE_NAME,'')
+
+        #context['sso_network_redirect_id'] = self.request.COOKIES.get('sso_network_auth_session_id')
+        context['sso_network_redirect_id'] = ''
+        if settings.REDIRECT_COOKIE_NAME in self.request.session:
+           context['sso_network_redirect_id'] = self.request.session[settings.REDIRECT_COOKIE_NAME]
+
+        auth_redirect_token = models.AuthRedirect.objects.filter(redirect_token=context['sso_network_redirect_id'])
+        if auth_redirect_token.count() > 0:
+            redirect_token = auth_redirect_token[0].redirect_token
+            context['page_logo'] = auth_redirect_token[0].domain_group.logo
+            context['auth_redirect_token'] = auth_redirect_token
+
+        #context['sso_auth_session_id'] = self.request.COOKIES.get(settings.SESSION_COOKIE_NAME,'')
+        #context['redirect_cookie_name'] = settings.REDIRECT_COOKIE_NAME
+        #context['redirect_token'] = self.request.COOKIES.get(settings.REDIRECT_COOKIE_NAME,None)
+
+        #auth_redirect = None
+        #redirect_token = context['redirect_token']
+        #if redirect_token:
+        #     auth_redirect = {}
+        #     auth_redirect_obj = models.AuthRedirect.objects.filter(redirect_token=redirect_token)
+        #     if auth_redirect_obj.count() > 0:
+        #         auth_redirect = auth_redirect_obj[0]
+        #if auth_redirect:
+        #    context['auth_redirect'] = auth_redirect
+        #    context['session_auth_url'] = auth_redirect.domain_group.session_auth_url
+        return context
+
+
 # Session Verification
 @csrf_exempt
 def Auth(request):
@@ -409,10 +527,13 @@ def Auth(request):
      get_session = request.GET.get('sso_auth_session_id',None)
      referer = request.GET.get('referer','')
      redirect_token = request.GET.get('redirect_token',None)
+     http_host = request.GET.get('http_host',None)
+     HTTP_X_HTTP_HOST=request.META.get('HTTP_X_HTTP_HOST',None)
 
      session_id = None
      #print (loader.render_to_string( 'cookie_session.html', {'title': "TEWST", 'cal': "CAL:"}))
-
+     print ("HTTP HOST")
+     print (HTTP_X_HTTP_HOST)
      if get_session:
            auth_redirect = {}
            session_id = get_session
@@ -438,9 +559,60 @@ def Auth(request):
          response['X-FIRSTNAME'] = request.user.first_name
          response['X-EMAIL'] = request.user.email 
 
-         if get_session:
+         domain_group = None
+         dg = models.DomainGroup.objects.all().order_by("lookup_order")
+         for d in dg:
+             if d.domain == "*":
+                 domain_group = d
+             else:
+                 if d.domain in HTTP_X_HTTP_HOST.lower():
+                     domain_group = d
+
+         valid_auth_user = True
+         if domain_group.enable_allowed_users is True:
+              valid_auth_user = False
+              domain_group.allowed_users
+              if domain_group.allowed_users:
+                   allowed_users = domain_group.allowed_users.splitlines()
+                   print (allowed_users)
+                   for au in allowed_users:
+                       print (au)
+                       print ("R")
+                       print (request.user)
+                       if request.user.email == au:
+                           valid_auth_user = True
+
+         print ("VALID USER")
+         print (valid_auth_user)
+
+         print ("DOMAIN GROUP")
+         print (domain_group)
+
+         valid_auth_type = False
+         domaingroupauthtype = models.DomainGroupAuthType.objects.filter(domain_group=domain_group, enabled=True)
+         print(domaingroupauthtype)
+         for dgat in domaingroupauthtype:
+             print (dgat.login_method)
+         #    print (request.session['authtype'])
+             if 'authtype' in request.session:
+                 if request.session['authtype'] == dgat.login_method:
+                       valid_auth_type = True
+         #    print (dgat.login_method)
+         print ("Valid Auth Type")
+         print (valid_auth_type)
+         
+
+         if get_session: # and valid_auth_type is True:
                response.set_cookie('sso_auth_session_id', get_session )
                response = HttpResponseRedirect(referer)
+         #else:
+             #response = HttpResponseRedirect("/logout")
+         if valid_auth_type is False:
+             response = HttpResponse('Auth type for current domain group is not valid', content_type='text/plain', status=401)
+
+         if valid_auth_user is False:
+             response = HttpResponse('Auth type for current domain group is not valid', content_type='text/plain', status=401)
+         
      else:
          response = HttpResponse('Unable to find valid session', content_type='text/plain', status=403)
          response['X-TOKENID'] = '093098124098312089kjaslkjjflkdas'
@@ -500,6 +672,7 @@ def AuthRedirect(request):
              #if pattern.match(app_auth_url.lower()):
              if d.domain in app_auth_url.lower():
                  domain_group = d
+                 break
 
      token_id = utils.create_token(64)
      auth_redirect_token = models.AuthRedirect.objects.create(redirect_token=token_id,expiry=datetime.datetime.now()+datetime.timedelta(minutes=60), domain_group=domain_group, return_url=app_auth_url)
@@ -509,6 +682,7 @@ def AuthRedirect(request):
      response = HttpResponse('Preparing to direct ....<script>window.location.href="'+DEFAULT_URL+'?auth_token='+redirect_token+'";</script>', content_type='text/html', status=200)
      response['X-TOKENID'] = '093098124098312089kjaslkjjflkdas'
      response.set_cookie(settings.REDIRECT_COOKIE_NAME, redirect_token,)
+     request.session[settings.REDIRECT_COOKIE_NAME] = redirect_token
      return response
 
 
@@ -564,4 +738,42 @@ def logout_old(request):
 #     return response
 #
 
+
+class LoginView(auth_views.LoginView):
+
+    template_name = 'sign_in_login.html'
+    def get_form_class(self):
+        #res = self.authentication_form or auth_forms.AuthenticationForm
+        res = auth_form.AuthenticationForm
+        return res
+
+    def post(self, request, *args, **kwargs):
+        user_agent = request.META.get('HTTP_USER_AGENT', '<unknown>')[:255]
+        ip_address = utils.get_client_ip(request)
+        http_accept = request.META.get('HTTP_ACCEPT', '<unknown>')
+        path_info = request.META.get('PATH_INFO', '<unknown>')
+        ip_key = 'ip_auth_block_'+ip_address
+        utils.store_login_attempt(user_agent, ip_address, request.POST.get('username','none'), http_accept, path_info, False, 'loginuserpass')
+        return super(LoginView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        """Security check complete. Log the user in."""
+        print (form.get_invalid_login_error())
+        forms_data = form.cleaned_data
+
+        eu = models.EmailUser.objects.filter(email=forms_data['username'])
+        email_user = None
+        if eu.count() > 0:
+              email_user = models.EmailUser.objects.get(email=forms_data['username'])
+
+        auth_login(self.request, form.get_user())
+
+        user_agent = self.request.META.get('HTTP_USER_AGENT', '<unknown>')[:255]
+        ip_address = utils.get_client_ip(self.request)
+        http_accept = self.request.META.get('HTTP_ACCEPT', '<unknown>')
+        path_info = self.request.META.get('PATH_INFO', '<unknown>')
+        ip_key = 'ip_auth_block_'+ip_address
+        utils.store_login_attempt(user_agent, ip_address, email_user.email,http_accept, path_info, True, 'loginuserpass')
+        self.request.session['authtype'] = 'loginuserpass'
+        return HttpResponseRedirect(reverse('login-succes'))
 

@@ -10,9 +10,6 @@
 {% endblock %}
 
 {% block content %}
-<script>
-	// createCookie("{{ redirect_cookie_name }}", "{{ redirect_token }}");
-</script>	
 {% if request.user.is_authenticated %}
       <div class="container">
         <div class="row">
@@ -22,21 +19,10 @@
                   <h3>Login Success</h3>
                   <div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
                       <div class="p-2 text-success fw-bold">
-                       You currently logged in.
+                       You are currently logged in.
                       </div>
                   </div>
-		  {% if session_auth_url %}
-                         <script>
-				 window.location = "{{ session_auth_url }}?sso_auth_session_id={{ sso_auth_session_id }}&redirect_token={{ redirect_token }}";
-                         </script>
-                  {% endif %}
-
-                  {% if old_referer %}
-                         <script>
-                         window.location = "{{ referer }}auth?sso_auth_session_id={{ sso_auth_session_id }}&referer={{ referer }}";
-                         </script>
-                  {% endif %}
- 
+      
       
           </div>
           <div class="col-md-3 col-sm-1">
@@ -44,7 +30,6 @@
         </div>
       </div>
 {% else %}
-
 
 <style>
 .help-inline {
@@ -83,7 +68,6 @@ margin-bottom:20px;
 
 
 </style>
-
 <style>
 
 .logo-thumb-img {
@@ -91,44 +75,55 @@ margin-bottom:20px;
         border-radius: 50%;
         width: 60px;
         height: 60px;
-	margin-bottom: 20px;
+        margin-bottom: 20px;
 }
 
 </style>
+
 
 <div class="container">
   <div class="row">
     <div class="col-md-3 col-sm-1">
     </div>
     <div class="col-md-6 col-sm-10">
-           <div class="row">
-	    <div class="col-md-8 col-sm-8">
-	    <h3>Sign-In 
+            <div class="row">
+            <div class="col-md-8 col-sm-8">
+            <h3>Register Account
             </h3>
-	    </div>
+            </div>
             <div class="col-md-4 col-sm-4 text-end">
-                   {% if page_logo %}
+		   {% if page_logo %}
                    <h1 id="site-title" class="site-logo">
                               <img src="{{ page_logo.url }}" alt="{{ title_header }}" class="logo-thumb-img"/>
                    </h1>
 		   {% endif %}
-            </div> 
+            </div>
+            </div>
+
+
             <div class="container-md shadow-sm rounded mb-5 p-4 bg-light">
-            <div class="d-grid gap-2">
-                <div style="background-color:#ededed; padding: 8px; border-radius: 5px 5px 5px 5px; ">To login to your account please choose a sign in option below.</div>
-                {% if emailpin_allow is True %}
-
-                <button type="button" class="btn btn-outline-primary" onclick="window.location='/sign-in/email-pin/';"><i class="bi bi-envelope-paper-fill"></i>&nbsp;&nbsp;Login with Email PIN</button>
-		{% endif %}
-		{% if login_allow is True %}
-		<button type="button" class="btn btn-outline-primary" onclick="window.location='/sign-in/login/';" ><i class="bi bi-key-fill"></i>&nbsp;&nbsp;Login with Password</button>
-		{% endif %}
-		{% if otp_allow is True %}
-		<button type="button" class="btn btn-outline-primary" onclick="window.location='/sign-in/otp/';"><i class="bi bi-123"></i>&nbsp;&nbsp;Login with OTP</button>
-		{% endif %}
+    
 
 
-	    <div>
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+	 <i class="bi bi-person-circle"></i>&nbsp;&nbsp; Enter Registeration Details
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+              <div class="border p-2">
+                 <!-- Content here -->
+                 {% crispy form %}
+              </div>
+            </div>
+
+      </div>
+    </div>
+  </div>
+</div>
 
 
     </div>
@@ -192,7 +187,7 @@ margin-bottom:20px;
               </div>
       </div>
      </div>
- 
+
      {% if referer %}
             <script>
             window.location = "{{ referer }}auth?sso_auth_session_id={{ sso_auth_session_id }}&referer={{ referer }}";

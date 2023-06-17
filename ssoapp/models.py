@@ -141,7 +141,8 @@ class DomainGroupAuthType(models.Model):
 
     LOGIN_METHOD = (
                 ('otp', 'OTP'),
-                ('emailpin', 'Email PIN')
+                ('emailpin', 'Email PIN'),
+                ('loginuserpass','Login')
              )
 
 
@@ -169,7 +170,8 @@ class AuthLog(models.Model):
 
     LOGIN_METHOD = (
                 ('otp', 'OTP'),
-                ('emailpin', 'Email PIN')
+                ('emailpin', 'Email PIN'),
+                ('loginuserpass','Login')
              )
 
     user_agent = models.CharField(max_length=255,)
